@@ -14,6 +14,6 @@
     {
       "src": "/api/v1/student/?(.*)",
       "dest": "/routes/student.routes"
-    }
-  ]
+    }
+  ]
 }
