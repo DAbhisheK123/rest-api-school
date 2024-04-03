@@ -8,10 +8,10 @@
   ],
   
     "routes": [
-      { "src": "/(.*)", "dest": "./src/app.js" },
+      { "src": "/(.*)", "dest": "./app.js" },
       {
         "src": "/api/v1/student/?(.*)",
-        "dest": "/src/routes/studentRoutes.js"
+        "dest": "./routes/studentRoutes.js"
        }
    
   ]
