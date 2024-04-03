@@ -9,11 +9,11 @@
   "routes": [
     {
       "src": "/",
-      "dest": "/app.js"
+      "dest": "src/app.js"
     },
     {
       "src": "/api/v1/student/?(.*)",
-      "dest": "/routes/student.routes.js"
+      "dest": "src/routes/student.routes.js"
     }
   ]
 }
