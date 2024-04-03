@@ -12,7 +12,7 @@
       "dest": "src/app.js"
     },
     {
-      "src": "/api/v1/student/?(.*)",
+      "src": "/api/v1/student/addstudent/",
       "dest": "src/routes/student.routes.js"
     }
   ]
