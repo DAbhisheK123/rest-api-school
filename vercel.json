@@ -6,14 +6,9 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "src/app.js"
-    },
-    {
-      "src": "/api/v1/student/?(.*)",
-      "dest": "src/routes/studentRoutes.js"
-    }
+  
+    "routes": [
+      { "src": "/(.*)", "dest": "/app.js" }
+   
   ]
 }
