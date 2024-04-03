@@ -45,7 +45,7 @@ const uploadToAWS = (filePath) => {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
-
+        
         axios.post(apiUrl, jsonData, { headers })
             .then(response => {
                 resolve(response.data.s3Url); // Resolve with the S3 URL
@@ -53,6 +53,7 @@ const uploadToAWS = (filePath) => {
             .catch(error => {
                 reject(error); // Reject with the error
             });
+            fs.unlink(filePath)
     });
 };
 const addStudent = asyncHandler(async (req, res) => {
