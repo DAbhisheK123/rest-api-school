@@ -15,7 +15,7 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.static("Public"))
 app.use(cookieParser())
 
-import {studentRouter} from "./routes/student.routes.js"
+import {studentRouter} from "./routes/studentRoutes.js"
 
 
 app.use("/api/v1/student", studentRouter)

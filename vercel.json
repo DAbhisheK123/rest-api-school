@@ -12,8 +12,8 @@
       "dest": "src/app.js"
     },
     {
-      "src": "/api/v1/student/getstudents/",
-      "dest": "src/routes/student.routes.js"
+      "src": "/api/v1/student/?(.*)",
+      "dest": "src/routes/studentRoutes.js"
     }
   ]
 }
