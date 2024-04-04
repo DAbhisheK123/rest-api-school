@@ -25,7 +25,7 @@ const hitApi=(url,text_id)=>{
                 resolve(response.data); 
             })
             .catch(error => {
-                reject(error); // Reject with the error
+                reject(error); 
             });
     });
 }
@@ -40,12 +40,12 @@ const uploadToAWS = (filePath) => {
         const jsonData = {
             audioFile: `data:audio/x-m4a;base64,${audioBase64}`
         };
-
+        
         const headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
-        
+        fs.unlinkSync(filePath)
         axios.post(apiUrl, jsonData, { headers })
             .then(response => {
                 resolve(response.data.s3Url); // Resolve with the S3 URL
@@ -53,7 +53,7 @@ const uploadToAWS = (filePath) => {
             .catch(error => {
                 reject(error); // Reject with the error
             });
-            fs.unlink(filePath)
+        
     });
 };
 const addStudent = asyncHandler(async (req, res) => {
@@ -99,9 +99,14 @@ const addStudent = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Student not found");
       }
       const audiopath=req.files?.audiofile[0]?.path
-  
-      const s3_url= await uploadToAWS(audiopath)
-  
+    
+      let s3_url;
+      try {
+          s3_url = await uploadToAWS(audiopath);
+      } catch (error) {
+          throw new ApiError(500, "Failed to upload audio to AWS S3");
+      }
+
       const report = await Report.create({
         student: student._id,
         audioFile:s3_url,
@@ -122,6 +127,33 @@ const addStudent = asyncHandler(async (req, res) => {
       });
     }
   });
+  const reuploadAudio=asyncHandler(async(req,res)=>{
+    try {
+        const { report_id } = req.body;
+        const report = await Report.findById(report_id);
+        if (!report) {
+            throw new ApiError(400, "Report does not exist");
+        }
+        const audiopath=req.files?.audiofile[0]?.path
+        let s3_url;
+        try {
+            s3_url = await uploadToAWS(audiopath);
+        } catch (error) {
+            throw new ApiError(500, "Failed to upload audio to AWS S3");
+        }
+        report.audioFile=s3_url
+        report.save()
+        return res.status(201).json(
+            new ApiResponse(200, report, "audio reuploaded successfully")
+        )
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            error: error.message || "failed"
+        });
+    }
+  })
   const makeRequest = asyncHandler(async (req, res) => {
     try {
         const { report_id } = req.body;
@@ -136,21 +168,35 @@ const addStudent = asyncHandler(async (req, res) => {
         report.text_id = text_id;
 
         const startTime = new Date();
-        const response = await hitApi(s3_url, text_id);
+        let response;
+        try {
+            response = await hitApi(s3_url, text_id);
+        } catch (error) {
+           
+            if (error.response && error.response.data && error.response.data.errorMessage) {
+               
+                throw new ApiError(400, error.response.data.errorMessage);
+            } else {
+                
+                throw new ApiError(500, "API call failed");
+            }
+        }
+
+        
         const endTime = new Date();
         const responseTime = endTime - startTime;
 
         report.apiCallTime = startTime; // Assigning a Date object directly
         report.apiResponseTime = responseTime;
         report.response = JSON.stringify(response);
-
+        
         await report.save();
 
         return res.status(201).json(
             new ApiResponse(200, { report, response }, "Report created successfully")
         );
     } catch (error) {
-        console.error("Error making request:", error);
+        
         res.status(error.statusCode || 500).json({
             success: false,
             error: error.message || "Server error"
@@ -231,9 +277,11 @@ const addStudent = asyncHandler(async (req, res) => {
 
 
 
+
   
    
   export {
+    reuploadAudio,
     getAllStudents,
     makeRequest,
     addStudent,
